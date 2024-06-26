@@ -13,7 +13,7 @@ const io = socketIo(server, {
 });
 
 app.use(cors());
- 
+
 const rooms = new Map();
 const drawings = {}; // Store drawings for each room
 const chatMessages = {}; // Store chat messages for each room
@@ -26,6 +26,9 @@ io.on("connection", (socket) => {
   socket.on("group", (roomId) => {
     socket.join(roomId);
     console.log(`User joined room: ${roomId}`);
+
+    const roomClients = io.sockets.adapter.rooms.get(roomId);
+    console.log(`Room ${roomId} has ${roomClients.size} clients`);
     // Send current state of the drawing board to the new user
     if (drawings[roomId]) {
       socket.emit("initDrawing", drawings[roomId]);
@@ -113,15 +116,61 @@ io.on("connection", (socket) => {
   });
 
   socket.on("drawing", (data) => {
-    const { points, lineId, roomId } = data;
-    if (drawings[roomId]) {
-      const lineIndex = drawings[roomId].findIndex(
+    const { points, roomId, lineId } = data;
+
+    console.log(data.type);
+    if (data.type) {
+      // Handle shapes (rectangles, circles, etc.)
+      if (!drawings[roomId]) {
+        drawings[roomId] = [];
+      }
+
+      // Find the shape in the drawings array and update or add it
+      let shapeIndex = drawings[roomId].findIndex(
+        (shape) => shape.id === data.id
+      );
+      if (shapeIndex !== -1) {
+        // Update existing shape
+        drawings[roomId][shapeIndex] = {
+          ...drawings[roomId][shapeIndex],
+          ...data,
+        };
+      } else {
+        // Add new shape
+        drawings[roomId].push({
+          ...data,
+        });
+      }
+
+      // Emit "drawing" event to all clients in the room
+      socket.to(roomId).emit("drawing", data);
+    } else {
+      // Handle lines
+      if (!drawings[roomId]) {
+        drawings[roomId] = [];
+      }
+
+      // Find the line in the drawings array and update or add it
+      let lineIndex = drawings[roomId].findIndex(
         (line) => line.lineId === lineId
       );
       if (lineIndex !== -1) {
-        drawings[roomId][lineIndex].points =
-          drawings[roomId][lineIndex].points.concat(points);
+        // Update existing line
+        drawings[roomId][lineIndex] = {
+          ...drawings[roomId][lineIndex],
+          points: [...drawings[roomId][lineIndex].points, ...points],
+        };
+      } else {
+        // Add new line
+        drawings[roomId].push({
+          lineId,
+          points,
+          color: data.color,
+          strokeWidth: data.strokeWidth,
+        });
       }
+
+      // Emit "drawing" event to all clients in the room
       socket.to(roomId).emit("drawing", data);
     }
   });

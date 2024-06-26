@@ -5,7 +5,7 @@ const ToolBar = ({
   setColor,
   setStrokeWidth,
   setShape,
-  undo,
+  undo, 
   redo,
 }) => {
   return (

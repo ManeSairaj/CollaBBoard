@@ -97,6 +97,7 @@ const Login = () => {
             setUserName(name);
             setRoomId(roomId);
             navigate(`/drawing/${data.roomId}/${name}`);
+            socket.disconnect();
           }
         });
       } else {
@@ -107,6 +108,7 @@ const Login = () => {
             setUserName(name);
             setRoomId(roomId);
             navigate(`/drawing/${data.roomId}/${name}`);
+            socket.disconnect();
           }
         });
       }
