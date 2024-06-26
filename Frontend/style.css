@@ -1,0 +1,30 @@
+/* Initial state */
+.text-container {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .text-container span {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    transition: opacity 0.5s ease-in-out;
+  }
+  
+  .text-container span.left-part {
+    opacity: 1; /* Full opacity for the left part */
+  }
+  
+  .text-container span.middle-part,
+  .text-container span.right-part {
+    opacity: 0; /* No opacity for the middle and right parts */
+  }
+  
+  /* Hover state */
+  .text-container:hover span.middle-part,
+  .text-container:hover span.right-part {
+    opacity: 1; /* Full opacity for the middle and right parts when hovering */
+  }
+  
